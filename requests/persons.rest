@@ -1,0 +1,39 @@
+### 3.1: list contacts (200)
+GET http://localhost:3001/api/persons
+
+### 3.2: current count and time (200)
+GET http://localhost:3001/info
+
+### 3.3: existing contact (200)
+GET http://localhost:3001/api/persons/1
+
+### 3.3: missing contact (404)
+GET http://localhost:3001/api/persons/999
+
+### 3.5: create a contact (201); repeat to test duplicate name (400)
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "Contacto Prueba",
+  "number": "123-456789"
+}
+
+### 3.6: missing number (400)
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "name": "Sin numero"
+}
+
+### 3.6: missing name (400)
+POST http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+  "number": "123-456789"
+}
+
+### 3.4: delete contact (204); GET /api/persons/1 will now return 404
+DELETE http://localhost:3001/api/persons/1
