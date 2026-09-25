@@ -4,6 +4,10 @@ Ejercicios 3.1–3.11 implementados y publicados en Render.
 
 URL pública: [Agenda telefónica](https://phonebook-backend-besv.onrender.com).
 
+Ejercicio 3.12: `mongo.js` preparado para guardar y listar contactos con Mongoose.
+Pendiente de configurar Atlas y verificar escritura/lectura reales.
+Sigue [MONGODB.md](MONGODB.md) para crear el clúster y ejecutar el programa.
+
 Verificación HTTP del despliegue: la raíz, `/api/persons` y `/info` responden 200.
 
 ## Inicio
