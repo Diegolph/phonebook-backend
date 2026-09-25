@@ -1,9 +1,10 @@
 # Phonebook backend — Full Stack Open
 
-Ejercicios 3.1–3.9 implementados. La preparación local de 3.10–3.11 está lista;
-falta publicar y verificar la aplicación en Internet.
+Ejercicios 3.1–3.11 implementados y publicados en Render.
 
-URL pública: pendiente de despliegue.
+URL pública: [Agenda telefónica](https://phonebook-backend-besv.onrender.com).
+
+Verificación HTTP del despliegue: la raíz, `/api/persons` y `/info` responden 200.
 
 ## Inicio
 
@@ -23,7 +24,7 @@ El servidor usa `PORT` o 3001. Detén json-server si ocupa ese puerto.
 | 3.6 | Datos incompletos o nombres duplicados devuelven 400 y error JSON. |
 | 3.7–3.8 | Morgan registra las solicitudes y el cuerpo de los POST. |
 | 3.9 | Conexión con React mediante /api/persons; CORS habilitado. |
-| 3.10–3.11 | Pendientes de publicación: Express ya sirve el build React de dist/. |
+| 3.10–3.11 | Backend publicado en Render; Express sirve el build React de dist/. |
 
 La actualización con PUT corresponde al 3.17 y todavía no está implementada.
 Los contactos viven en memoria y se restablecen al reiniciar el servidor.
