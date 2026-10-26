@@ -1,5 +1,11 @@
 # Phonebook backend — Full Stack Open
 
+## Parte 11: CI/CD
+
+Pipeline, pruebas de navegador, despliegue Render y guía de revisión en
+[CI-CD.md](CI-CD.md). Repositorio principal de entrega:
+[full-stack-open-pokedex](https://github.com/Diegolph/full-stack-open-pokedex).
+
 Ejercicios 3.1–3.11 implementados y publicados en Render.
 
 URL pública: [Agenda telefónica](https://phonebook-backend-besv.onrender.com).

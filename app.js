@@ -23,6 +23,11 @@ const createApp = (logStream = process.stdout) => {
   app.use(morgan(`${morgan.tiny} :body`, { stream: logStream }))
   app.use(express.static(path.join(__dirname, 'dist')))
 
+  app.get('/health', (request, response) => response.send('ok'))
+  app.get('/version', (request, response) => {
+    response.send(process.env.RENDER_GIT_COMMIT || process.env.APP_VERSION || 'development')
+  })
+
   app.get('/api/persons', (request, response) => {
     response.json(persons)
   })

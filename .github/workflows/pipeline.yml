@@ -1,0 +1,102 @@
+name: Deployment pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    name: Quality checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      deployed: ${{ steps.deploy.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser tests
+        run: npm run test:e2e
+      - name: Save browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+      - name: Deploy the tested commit to Render
+        id: deploy
+        if: >-
+          github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+          !contains(join(github.event.commits.*.message, ' '), '#skip') &&
+          vars.DEPLOY_ENABLED == 'true'
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          APP_URL: ${{ vars.APP_URL }}
+        run: node scripts/deploy-render.cjs
+
+  tag_release:
+    name: Tag deployed release
+    needs: quality
+    if: needs.quality.outputs.deployed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bump patch version
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8 # 1.75.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          TAG_PREFIX: v
+          RELEASE_BRANCHES: main
+
+  notify:
+    name: Deployment notification
+    needs: [quality, tag_release]
+    if: >-
+      always() && vars.NOTIFICATIONS_ENABLED == 'true' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify successful deployment
+        if: needs.quality.outputs.deployed == 'true' && needs.tag_release.result == 'success'
+        uses: tsickert/discord-webhook@b217a69502f52803de774ded2b1ab7c282e99645 # v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: >-
+            Deployed ${{ github.repository }} at ${{ github.sha }}.
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Notify pipeline failure
+        if: needs.quality.result == 'failure' || needs.tag_release.result == 'failure'
+        uses: tsickert/discord-webhook@b217a69502f52803de774ded2b1ab7c282e99645 # v7.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: >-
+            Pipeline failed for ${{ github.repository }} at ${{ github.sha }}
+            (branch ${{ github.ref_name }}, actor ${{ github.actor }}).
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
